@@ -16,6 +16,7 @@ $sbuss = json_decode(curl_exec($ch));
 
 // Merge lists:
 $buss->turer = array_merge($buss->turer,$sbuss->turer);
+$buss->meddelanden = array_merge($buss->meddelanden,$sbuss->meddelanden);
 curl_close($ch);
 
 print json_encode($buss);
