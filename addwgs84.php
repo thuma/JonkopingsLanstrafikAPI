@@ -6,11 +6,14 @@ require_once dirname(__FILE__) . '/CoordinateTransformationLibrary/src/coordinat
 $all = json_decode(file_get_contents('coord.json'));
 foreach($all as $key => $station)
 	{
+		if(isset($all[$key]->position->wgs84) == FALSE)
+		  {
 		  $position = new RT90Position($all[$key]->position->rt90->x, $all[$key]->position->rt90->y);
 		  $wgs84 = $position->toWGS84();
 		  $all[$key]->position->wgs84 = new stdClass;
 		  $all[$key]->position->wgs84->lat = $wgs84->getLatitude();
 		  $all[$key]->position->wgs84->long = $wgs84->getLongitude();
+		  }
 	}
 file_put_contents('coord-wgs84.json',json_encode($all));
 ?>

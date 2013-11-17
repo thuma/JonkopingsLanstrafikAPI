@@ -23,7 +23,7 @@ if(is_file($namelist) == FALSE)
 			foreach($list as $node)
 				{
 				$station['name'] = trim($node->nodeValue);
-				$station['cleanname'] = preg_replace('/\s+/', ' ',$station['name']);
+				$station['cleanname'] = preg_replace('/[ |\t]+/', ' ',$station['name']);
 				$all[] = $station;
 				print_r($station);
 				$newdata = TRUE;
@@ -42,17 +42,23 @@ if(is_file($idlist) == FALSE)
 	{
 	foreach($all as $key => $name)
 		{
-		$url = 'http://193.45.213.123/jonkoping/rpajax.aspx?net=JLT&lang=se&letters='.urlencode($name->cleanname);
+		if($name->id != null){continue;};
+		if($name->cleanname == null)
+			{
+			$name->cleanname = preg_replace('/[ |\t]+/', ' ',$name->name);
+			}
+		$url = 'http://193.45.213.123/jonkoping/rpajax.aspx?net=JLT&lang=se&letters='.urlencode(utf8_decode($name->cleanname));
 		$data = utf8_encode(file_get_contents($url));
 		$stationer = preg_split('/></',$data);
 		foreach($stationer as $soksvar)
 			{
 			$station = preg_split('/###/', $soksvar);
 			$stationinfo = preg_split('/\|/', $station[0]);
-			if(trim(preg_replace('/\s+/', ' ',$stationinfo[0])) == $name->cleanname)
+			if(trim(preg_replace('/[ |\t]+/', ' ',$stationinfo[0])) == $name->cleanname)
 				{
 				$all[$key]->id = $stationinfo[1];
 				$all[$key]->type = $stationinfo[2];
+				$all[$key]->cleanname = preg_replace('/[ |\t]+/', ' ', $name->name);
 				break;
 				}
 			}
@@ -62,12 +68,11 @@ if(is_file($idlist) == FALSE)
 	}
 
 $all = json_decode(file_get_contents($idlist));
-print json_encode($all);
 
 $idlist = 'coord.json';
 foreach($all as $key => $station)
 	{
-	if(isset($station->position)==FALSE)
+	if(isset($station->position) == FALSE OR $station->position->rt90->x == NULL)
 		{
 		//open connection
 		$ch = curl_init('http://193.45.213.123/jonkoping/querypage_adv.aspx');
@@ -118,5 +123,5 @@ foreach($all as $key => $station)
 	}
 
 $all = json_decode(file_get_contents($idlist));
-print json_encode($all);
+//print json_encode($all);
 ?>
